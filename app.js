@@ -11,7 +11,7 @@ const DINOSAUR = {
 
 const GAME = {
   DEFAULT_SPEED: 5,
-  SPEED_MULTIPLIER: 0.1 ,
+  SPEED_MULTIPLIER: 0.1,
   SPEED_MULTIPLIER_RATE: 100,
   OBSTACLE_SPAWN_RATE: 100,
   FLYING_OBSTACLE_SPAWN_RATE: 130,
@@ -68,7 +68,7 @@ const game = {
     this.ctx = this.canvas.getContext('2d')
 
     this.frameNo = 0
-    this.stop = false
+    this.freeze = false
     this.land = this.canvas.height - DINOSAUR.HEIGHT - GAME.MARGIN
     this.speed = GAME.DEFAULT_SPEED
 
@@ -84,6 +84,10 @@ const game = {
 
     window.addEventListener('keydown', (e) => {
       this.keys[e.key] = true
+
+      if (this.freeze && this.keys[' ']) {
+        this.restart()
+      }
     })
 
     window.addEventListener('keyup', (e) => {
@@ -212,8 +216,42 @@ const game = {
     }
   },
 
+  stop(message = '') {
+    this.freeze = 1
+
+    if (message) {
+      const ctx = this.ctx
+
+      ctx.font = 'bold 50px arial'
+      ctx.fillStyle = 'black'
+      ctx.textAlign = 'center'
+      ctx.fillText(message, this.canvas.width / 2, this.canvas.height / 2)
+
+      ctx.font = '20px arial'
+      ctx.fillStyle = 'black'
+      ctx.textAlign = 'center'
+      ctx.fillText(
+        'Tekan spasi untuk bermain lagi',
+        this.canvas.width / 2,
+        this.canvas.height / 2 + 30
+      )
+    }
+  },
+
+  restart() {
+    this.freeze = 0
+    this.clear()
+    // this.frameNo = 1
+    this.obstacles = []
+    this.speed = GAME.DEFAULT_SPEED
+
+    requestAnimationFrame(() => {
+      this.render()
+    })
+  },
+
   render() {
-    if (this.stop) return
+    if (this.freeze) return
 
     this.clear()
 
@@ -230,9 +268,9 @@ const game = {
     this.spawnObstacle()
 
     this.moveObstacles()
-    
+
     if (this.checkCollision()) {
-      this.stop = true
+      this.stop('GAME OVER')
     }
 
     requestAnimationFrame(() => {
